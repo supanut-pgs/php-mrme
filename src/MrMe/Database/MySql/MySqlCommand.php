@@ -223,7 +223,7 @@ class MySqlCommand
 
 	public function getClause()
 	{
-		return $this->sql_clause_;
+		return $this->sql_clause_ . " " . $this->group_;
 	}
 
 	public function setClause($clause)
