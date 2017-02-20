@@ -40,7 +40,7 @@ class ExcelGenerator
 				$alphabet++;
 			}
 			$alphabet = 'A';
-			$alphabet++;
+			$numeric++;
 		}
 
 		// Rename sheet
