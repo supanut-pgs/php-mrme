@@ -2,39 +2,63 @@
 namespace MrMe\Database\MySql;
 
 use MrMe\Util\Util as Util;
+use MrMe\Database\IConnection as IDatabaseConnection;
 
-class MySqlConnection
+class MySqlConnection implements IDatabaseConnection
 {
-	public $_CONFIG = 0;
+	public  $_CONFIG = 0;
 
 	private $connection = 0;
 	private $statement  = 0;
 	private $logger     = 0;
+	private $charset    = 0;
 
 	public function __construct($_CONFIG, $charset = "utf8", $logger = null)
 	{
 		if (empty($_CONFIG)) return null;
 
 		$this->_CONFIG = $_CONFIG;
-		$host = $_CONFIG['DB']['HOST'];
-		$username = $_CONFIG['DB']['USERNAME'];
-		$password = $_CONFIG['DB']['PASSWORD'];
-		$name = $_CONFIG['DB']['NAME'];
+		
+		$this->charset = $charset;
 
-		$this->connection = mysqli_connect($host, $username, $password, $name);
-		$this->connection->set_charset($charset);
-
-//var_dump($logger);
 		$this->logger = $logger;
+
+		//$this->connect();
 	}
 
 	public function __destruct()
 	{
-		if ($this->connection && strcmp(gettype($this->connection), "boolean") != 0)
-			unset($this->connection);
+		//var_dump($this->connection);
+		// if ($this->connection)
+		// 	$this->connection->close();
+		// if (gettype($this->connection) == "boolean")
+		//$this->close();
+		// return true;
+	}
+
+	public function connect()
+	{
+		if (empty($this->_CONFIG)) return 0;
+
+		$host     = $this->_CONFIG['DB']['HOST'];
+		$username = $this->_CONFIG['DB']['USERNAME'];
+		$password = $this->_CONFIG['DB']['PASSWORD'];
+		$name     = $this->_CONFIG['DB']['NAME'];
+
+		$this->connection = mysqli_connect($host, $username, $password, $name);
+		$this->connection->set_charset($this->charset);
+
+		return $this->connection;
+	}
+
+	public function close()
+	{
+		if (!empty($this->connection) && strcmp(gettype($this->connection), "boolean") != 0)
+			 unset($this->connection);
 
 		unset($this->_CONFIG);
 		unset($this->statement);
+		return true;
 	}
 
 	public function getLastInsertId()

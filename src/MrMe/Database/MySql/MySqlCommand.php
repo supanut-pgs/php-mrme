@@ -4,70 +4,52 @@ namespace MrMe\Database\MySql;
 use Exception;
 use MrMe\Util\Util as Util;
 use MrMe\Util\StringFunc as StringFunc;
+use MrMe\Database\CommandBase as CommandBase;
 
-class MySqlCommand
+class MySqlCommand extends CommandBase
 {
-	private $clause_     = false;
-	private $logic       = false;
-	private $sql_clause_ = "";
-	private $sql         = "";
-	private $limit_      = "";
-	private $group_      = "";
-	private $order_      = "";
+	// private $clause_     = false;
+	// private $logic       = false;
+	// private $sql_clause_ = "";
+	// private $sql         = "";
+	// private $limit_      = "";
+	// private $group_      = "";
+	// private $order_      = "";
 
-	public  $params;
-	public  $connection;
-	public  $logger;
+	// public  $params;
+	// public  $connection;
+	// public  $logger;
 
 	public function __construct($connection = null, $logger = null)
 	{
-		$this->params = array();
-		$this->connection = $connection;
-		$this->logger = $logger;
+		parent::__construct($connection, $logger);
+		// $this->params = array();
+		// $this->connection = $connection;
+		// $this->logger = $logger;
 	}
 
-	public function __destruct()
-	{
-		unset($this->sql);
-		unset($this->params);
-	}
+	// public function __destruct()
+	// {
+	// 	unset($this->sql);
+	// 	unset($this->params);
+	// }
 
-	public function bindParam($key, $value)
-	{
-		//echo $this->sql;
-		preg_match_all("/@.[\w]*/", $this->sql.$this->sql_clause_, $keywords);
-		if (count($keywords) == 0) return;
-		//var_dump($keywords);
-		$index = array_search($key, $keywords[0]);
-		// echo "<br>-------index------"; var_dump($index);
-		// echo "<br>-------key----------"; var_dump($key);
-		// echo "<br>-------value-----------"; var_dump($value);
-		if (gettype($index) != "boolean")
-		{
-			$value = empty($value) ? "" : $value;
-			$this->params[$index] = $value;
-			//var_dump($this->params);
-		}
-		ksort($this->params);
-
-	}
-
-	public function getLastInsertId()
-	{
-		return $this->connection->getLastInsertId();
-	}
+	// public function getLastInsertId()
+	// {
+	// 	return $this->connection->getLastInsertId();
+	// }
 
 	public function execute()
 	{
 		if (!$this->connection) return array("message" => "No connection !");
 
-		$this->sql.=$this->sql_clause_.$this->group_.$this->order_.$this->limit_;
+		//$this->sql.=$this->sql_clause_.$this->group_.$this->order_.$this->limit_;
 
 		$prepareStatement = "";
-		$prepareStatement = preg_replace("/@.[\w]*/", "?", $this->sql);
+		$prepareStatement = preg_replace("/@.[\w]*/", "?", $this->getFullQuery());
 
 		if (empty($prepareStatement))
-			$prepareStatement = $this->sql;
+			$prepareStatement = $this->getFullQuery();
 
 		$params = array();
 		$params[0] = $prepareStatement;
@@ -85,13 +67,11 @@ class MySqlCommand
 	{
 		if (!$this->connection) return array("message" => "No connection !");
 
-		$this->sql.=$this->sql_clause_.$this->group_.$this->order_.$this->limit_;
-
 		$prepareStatement = "";
-		$prepareStatement = preg_replace("/@.[\w]*/", "?", $this->sql);
-		//echo ">> $prepareStatement <<";
+		$prepareStatement = preg_replace("/@.[\w]*/", "?", $this->getFullQuery());
+
 		if (empty($prepareStatement))
-			$prepareStatement = $this->sql;
+			$prepareStatement = $this->getFullQuery();
 
 		$params = array();
 		$params[0] = $prepareStatement;
@@ -109,7 +89,33 @@ class MySqlCommand
 		return $model;
 	}
 
-	public function select($table, $fields = "*", $clause = null, $offset = 0, $size = 0)
+	public function executeReaderFirst()
+	{
+		if (!$this->connection) return array("message" => "No connection !");
+
+		$prepareStatement = "";
+		$prepareStatement = preg_replace("/@.[\w]*/", "?", $this->getFullQuery());
+
+		if (empty($prepareStatement))
+			$prepareStatement = $this->getFullQuery();
+
+		$params = array();
+		$params[0] = $prepareStatement;
+		if (count($this->params) > 0)
+			$params = array_merge($params, $this->params);
+
+		$err = Util::callFunction($this->connection, 'query', $params);
+		if ($err) die(json_encode($err));
+
+		$model = $this->connection->read();
+
+		$model = json_encode($model);
+		$model = json_decode($model);
+		$this->reset();
+		return $model;
+	}
+
+	public function select($table, $fields = "*", $clause = "")
 	{
 		if (gettype($fields) === "array")
 		{
@@ -127,108 +133,19 @@ class MySqlCommand
 
 			}
 		}
-		else
+		else if (!empty($clause))
 		{
-			$sql.= $clause;
+			$this->setClause($clause);
+			//$this->sql_clause_ .= $clause;
+			//$sql.= $clause;
 		}
 
-		if ($size > 0)
-			$sql.= "LIMIT $offset, $size ";
-
-		$this->sql = $sql;
-
-		return $this;
-	}
-
-	public function where($field, $opt, $value)
-	{
-		$sql = "";
-		if (!empty($value) || is_numeric($value))
-		{
-			if (!$this->clause_)
-			{
-				$sql.= " WHERE ";
-				$this->clause_ = true;
-				$this->logic_  = true;
-			}
-			$sql.= "$field $opt $value ";
-		}
-
-		$this->sql_clause_.= $sql;
+		// if ($size > 0)
+		// 	$sql.= "LIMIT $offset, $size ";
+		$this->setSql($sql);
+		//$this->sql = $sql;
 
 		return $this;
-	}
-
-	public function group($fields)
-	{
-		if ($fields)
-			$this->group_ .= " GROUP BY $fields ";
-		return $this;
-	}
-
-	public function bracket($brkt)
-	{
-		//echo $this->clause_;
-		if (!$this->clause_)
-		{
-			//$this->sql_clause_.= " WHERE ";
-			$this->clause_ = true;
-		}
-		$this->sql_clause_.=" $brkt ";
-		if (StringFunc::startWith($brkt, "("))
-			$this->logic_ = false;
-		return $this;
-	}
-
-	public function or($field = "", $opt = "", $value = "")
-	{
-		if (!empty($value) || is_numeric($value))
-		{
-			if ($this->logic_)
-				$this->sql_clause_.= " OR $field $opt $value ";
-			else
-				$this->where($field, $opt, $value);
-		}
-		$this->logic_ = true;
-		return $this;
-	}
-
-	public function and($field = "", $opt = "", $value = "")
-	{
-		if (!empty($value) || is_numeric($value))
-		{
-			if ($this->logic_)
-				$this->sql_clause_.= " AND $field $opt $value ";
-			else
-				$this->where($field, $opt, $value);
-		}
-		$this->logic_ = true;
-		return $this;
-	}
-
-	public function limit($offset, $size)
-	{
-		if ($offset + $size > 0)
-		{
-			$this->limit_ .= " LIMIT $offset, $size ";
-		}
-		return $this;
-	}
-
-	public function order($field, $type)
-	{
-		$this->order_.= " ORDER BY $field $type ";
-		return $this;
-	}
-
-	public function getClause()
-	{
-		return $this->sql_clause_ . " " . $this->group_;
-	}
-
-	public function setClause($clause)
-	{
-		$this->sql_clause_ = $clause;
 	}
 
 	public function insert($table, $field = [], $value = [])
@@ -248,10 +165,11 @@ class MySqlCommand
 			$value = implode($value, ",");
 		}
 		$sql = "INSERT INTO $table ($field) VALUES ($value) ";
-		$this->sql = $sql;
+		$this->setSql($sql);
+		// $this->sql = $sql;
 	}
 
-	public function update($table, $sets = [], $clause = NULL)
+	public function update($table, $sets = [], $clause = "")
 	{
 		foreach ($sets as $i => $s)
 			if (empty($s)) unset($sets[$i]);
@@ -268,32 +186,186 @@ class MySqlCommand
 
 			}
 		}
-		else
+		else if (!empty($clause))
 		{
-			$sql.= $clause;
+
+			//$this->sql_clause_ .= $clause;
+			$this->setClause($clause);
 		}
 
-
-		$this->sql = $sql;
+		$this->setSql($sql);
+		//$this->sql = $sql;
 	}
 
-	public function delete($table, $clause = NULL)
+	public function delete($table, $clause = "")
 	{
 		$sql = "DELETE FROM $table $clause";
-		$this->sql = $sql;
+		$this->setSql($sql);
 	}
 
-	private function reset()
+	public function bindParam($key, $value)
 	{
-		$this->sql = 0;
-		$this->sql_clause_ = "";
-		$this->limit_ = "";
-		$this->params = array();
-		$this->clause_ = false;
-		$this->logic_  = false;
-		$this->group_ = "";
-		$this->order_ = "";
+		//echo $this->sql;
+		preg_match_all("/@.[\w]*/", $this->getFullQuery(), $keywords);
+		if (count($keywords) == 0) return;
+
+		//$sql = preg_replace("/@.$key*/", "?", $this->getFullQuery());
+		//var_dump($sql);
+		//$this->setSql($sql);
+		//var_dump($keywords);
+		$index = array_search($key, $keywords[0]);
+		// echo "<br>-------index------"; var_dump($index);
+		// echo "<br>-------key----------"; var_dump($key);
+		// echo "<br>-------value-----------"; var_dump($value);
+		$params = $this->getParams();
+		if (gettype($index) != "boolean")
+		{
+			$value = empty($value) ? "" : $value;
+
+			$params[$index] = $value;
+			//var_dump($this->params);
+		}
+		ksort($params);
+		$this->setParams($params);
+
 	}
+
+
+	public function where($field, $opt = "", $value = "")
+	{
+		$sql = "";
+		if (!empty($value) || is_numeric($value))
+		{
+			// if (!$this->wasClause())
+			// {
+				
+			// 	$sql.= "WHERE ";
+			// }
+			$sql.= "WHERE $field $opt $value ";
+		}
+		
+		$this->setClause($sql);
+		//$this->sql_clause_.= $sql;
+
+		return $this;
+	}
+
+	public function or($field = "", $opt = "", $value = "")
+	{
+		if (!empty($value) || is_numeric($value))
+		{
+			if ($this->wasLogic())
+				$this->addClause(" OR $field $opt $value ");
+			else
+				$this->where($field, $opt, $value);
+		}
+		//$this->logic_ = true;
+		return $this;
+	}
+
+	public function and($field = "", $opt = "", $value = "")
+	{
+		if (!empty($value) || is_numeric($value))
+		{
+			if ($this->wasLogic())
+				$this->addClause(" AND $field $opt $value ");
+			else
+				$this->where($field, $opt, $value);
+		}
+		//$this->logic_ = true;
+		return $this;
+	}
+
+
+	public function group(... $params)
+	{
+		if ($params)
+		{
+			$fields = implode(",", $params);
+			if (!$this->wasGroup())
+			{
+				$this->addGroup(" GROUP BY $fields ");
+			}
+			else
+			{
+				$this->addGroup(",$fields ");
+			}
+		}
+		return $this;
+	}	
+
+	public function order(... $params)
+	{
+		if ($params)
+		{
+			$params = implode(" ", $params);
+			if (!$this->wasOrder())
+			{
+				$this->addOrder(" ORDER BY $params ");
+			}
+			else
+			{
+				$this->addOrder(", $params ");
+			}
+		}
+		
+		// $this->order_.= " ORDER BY $params ";
+		return $this;
+	}
+
+	public function bracket($brkt)
+	{
+		//echo $this->clause_;
+		if (!$this->clause_)
+		{
+			//$this->sql_clause_.= " WHERE ";
+			$this->clause_ = true;
+		}
+		$this->sql_clause_.=" $brkt ";
+		if (StringFunc::startWith($brkt, "("))
+			$this->is_logic= false;
+		return $this;
+	}
+
+	public function limit($offset, $size)
+	{
+		if ($offset + $size > 0)
+		{
+			$this->setLimit(" LIMIT $offset, $size ");
+			//$this->limit_ .= " LIMIT $offset, $size ";
+		}
+		return $this;
+	}
+
+	
+	
+
+	// public function getClause()
+	// {
+	// 	return $this->sql_clause_ . " " . $this->group_;
+	// }
+
+	// public function setClause($clause)
+	// {
+	// 	$this->sql_clause_ = $clause;
+	// }
+
+	
+
+	
+
+	
+	// private function reset()
+	// {
+	// 	$this->sql = 0;
+	// 	$this->sql_clause_ = "";
+	// 	$this->limit_ = "";
+	// 	$this->params = array();
+	// 	$this->clause_ = false;
+	// 	$this->logic_  = false;
+	// 	$this->group_ = "";
+	// 	$this->order_ = "";
+	// }
 
 }
 ?>

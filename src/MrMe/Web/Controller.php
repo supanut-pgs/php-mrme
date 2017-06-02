@@ -44,6 +44,7 @@ class Controller
 		$this->_CONFIG = $_CONFIG;
 		//var_dump($this->logger);
 		$con = new MySqlConnection($_CONFIG, "utf8", $this->logger);
+		$con->connect();
 		$this->db = new MySqlCommand($con , $this->logger); 
 
 		$this->response = new Response($this->logger);
