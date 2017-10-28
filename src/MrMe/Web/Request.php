@@ -8,6 +8,7 @@ class Request
 	public function __construct($bodyParams = null)
 	{
 		$this->addr = $_SERVER['REMOTE_ADDR'];
+		$this->json = json_decode(file_get_contents('php://input'));
 		
 		if ($bodyParams)
 		 	$this->params = json_decode(json_encode($bodyParams));
