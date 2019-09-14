@@ -119,7 +119,7 @@ class MySqlCommand extends CommandBase
 	{
 		if (gettype($fields) === "array")
 		{
-			$fields = implode($fields, ",");
+			$fields = implode(",", $fields);
 		}
 
 		//if (count($clause) == 0) $clause = null;
@@ -220,7 +220,7 @@ class MySqlCommand extends CommandBase
 		$params = $this->getParams();
 		if (gettype($index) != "boolean")
 		{
-			$value = empty($value) ? "" : $value;
+			$value = $value == 0 ? 0 : empty($value) ? "" : $value;
 
 			$params[$index] = $value;
 			//var_dump($this->params);
