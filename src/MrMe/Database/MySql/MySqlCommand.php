@@ -152,19 +152,33 @@ class MySqlCommand extends CommandBase
 	{
 		if (count($field) > 0 && count($value) > 0)
 		{
-			foreach ($value as $i => $val)
+			if (is_array($value[0]))
 			{
-				if (empty($val))
-				{
-					unset($field[$i]);
-					unset($value[$i]);
-				}
+				// insert sets 
+				foreach ($value as $i => $val)
+					$value[$i] = "(".implode($val, ",").")";
+				
+				$field = implode($field, ",");
+				$value = implode($value, ",");
 			}
-
-			$field = implode($field, ",");
-			$value = implode($value, ",");
+			else 
+			{
+				// insert single 
+				foreach ($value as $i => $val)
+				{
+					if (empty($val))
+					{
+						unset($field[$i]);
+						unset($value[$i]);
+					}
+				}
+	
+				$field = implode($field, ",");
+				$value = "(".implode($value, ",").")";
+			}
+			
 		}
-		$sql = "INSERT INTO $table ($field) VALUES ($value) ";
+		$sql = "INSERT INTO $table ($field) VALUES $value ";
 		$this->setSql($sql);
 		// $this->sql = $sql;
 	}
