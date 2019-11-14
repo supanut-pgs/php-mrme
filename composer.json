@@ -25,9 +25,7 @@
     },
     "autoload":{
     	"psr-4": {
-            "MrMe\\":"src/MrMe",
-            "MrMe/Database\\":"src/MrMe/Database",
-            "MrMe/Database/MySql\\":"src/MrMe/Database/MySql"
+            "":"src/MrMe"
         }
     }
 }
