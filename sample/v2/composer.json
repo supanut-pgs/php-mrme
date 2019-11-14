@@ -1,0 +1,19 @@
+{
+    "name": "php-mrme/sample/v2",
+    "authors": [
+        {
+            "name": "Supanut Panyagosa",
+            "email": "supanut.pgs@gmail.com"
+        }
+    ],
+    "require": {
+        "monolog/monolog": "^1.22"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "app/",
+            "MrMe\\": "../../src/MrMe"
+
+        }
+    }
+}
