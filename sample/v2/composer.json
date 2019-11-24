@@ -1,5 +1,5 @@
 {
-    "name": "php-mrme/sample/v2",
+    "name": "php-mrme/sample",
     "authors": [
         {
             "name": "Supanut Panyagosa",
@@ -7,9 +7,14 @@
         }
     ],
     "require": {
-        "monolog/monolog": "^1.22"
+        "larapack/dd": "1.*",
+        "monolog/monolog": "^2.0"
     },
     "autoload": {
+        "files": [
+            "../../src/MrMe/Util/Function.php",
+            "./logger.php"
+        ],
         "psr-4": {
             "": "app/",
             "MrMe\\": "../../src/MrMe"

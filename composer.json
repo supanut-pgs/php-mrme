@@ -19,11 +19,15 @@
     ],
     "require": {
         "php": ">=5.3.0",
-		"monolog/monolog": "^1.22",
+		"monolog/monolog": "^2.0",
 		"phpoffice/phpexcel": "^1.8.0",
-        "phpunit/phpunit": "3.7.*"
+        "phpunit/phpunit": "3.7.*",
+        "larapack/dd": "1.*"
     },
     "autoload":{
+        "files" : [
+            "src/MrMe/Util/Function.php"
+        ],
     	"psr-4": {
             "":"src/MrMe"
         }

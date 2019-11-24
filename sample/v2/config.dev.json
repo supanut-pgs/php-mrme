@@ -1,0 +1,22 @@
+{
+    "version": "0.2",
+    "name": "Sample API v0.2 Php-MrMe",
+    "database" : [
+        {
+            "connection": "mysql",
+            "host": "192.168.1.8",
+            "port": "3306",
+            "name": "test",
+            "username": "test",
+            "password": "Password@root_remote"
+        }
+    ],
+    "logger" : [
+        {
+            "name": "DUMP_DATABASE_LOG",
+            "output": "./Logs/[%date%]-[dump_db_query].log",
+            "format": "[%datetime%] %channel%.%level_name%: %dbname%.%message% %context.user%\n",
+            "level": "info"
+        }
+    ]
+}
