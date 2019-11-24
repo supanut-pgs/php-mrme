@@ -59,12 +59,12 @@ class RouteBase
 
         $match_path = rtrim($query, $params);
 
-        var_dump("Query = " . $query);
-        var_dump("Path = " . $path);
-        var_dump("Params = " . $params);
-        var_dump("Matching = " . rtrim($query, $params));
+        // var_dump("Query = " . $query);
+        // var_dump("Path = " . $path);
+        // var_dump("Params = " . $params);
+        // var_dump("Matching = " . rtrim($query, $params));
 
-        var_dump("Params Object", RouteBase::convertTextToParams($params));
+        // var_dump("Params Object", RouteBase::convertTextToParams($params));
         if ($match_path == $path)
         {
 
