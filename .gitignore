@@ -1,3 +1,6 @@
 *.lock
 vendor/*
 sample/v2/vendor/*
+.idea/*
+settings.json
+*.log
