@@ -1,15 +1,13 @@
 <?php
 namespace MrMe\Web\v2;
 
-use Api\Controller\Test;
-
-class Controller
+class ControllerBase 
 {
     public static function create()
     {
         $class = get_called_class();
         $class = new $class;
-
+        
         return $class;
     }
 
@@ -25,3 +23,12 @@ class Controller
 
     }
 }
+
+class Controller extends ControllerBase
+{
+    public $request;
+    public $response;    
+
+    
+}
+
