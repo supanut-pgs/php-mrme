@@ -1,22 +1,21 @@
 <?php
 namespace MrMe\Web\v2;
 
-use MrMe\Web\Controller as Controller;
-use MrMe\Util\StringFunc as StringFunc; 
-
-
 class ResponseBase
 {
-    public const CONTINUE = 100;
-    public const SWITCHING_PROTOCOLS = 101;
-    public const OK = 200;
-    public const CREATED = 201;
-    public const BAD_REQUEST = 400;
-    public const NOT_FOUND = 404;
-    public const NOT_IMPLEMENTED = 501;
+    public const CONTINUE               = 100;
+    public const SWITCHING_PROTOCOLS    = 101;
+    public const OK                     = 200;
+    public const CREATED                = 201;
+    public const BAD_REQUEST            = 400;
+    public const NOT_FOUND              = 404;
+    public const NOT_IMPLEMENTED        = 501;
+    public const NOT_ACCEPTABLE         = 406;
+    public const UNAUTHORIZED           = 401;
 
     public static function reply_json($data, $status_code = self::OK)
     {
+        header('Content-Type: application/json');
         http_response_code($status_code);
         echo json_encode($data);
         exit;
@@ -37,6 +36,7 @@ class Response extends ResponseBase
 
     public function success($data, $code = self::OK){parent::reply_json($data, $code);}
     public function error($data, $code = self::BAD_REQUEST){parent::reply_json($data, $code);}
+    public function unauthorized($data, $code = self::UNAUTHORIZED){parent::reply_json($data, $code);}
 
 }
 //
