@@ -119,7 +119,7 @@ class MySqlCommand extends CommandBase
 	{
 		if (gettype($fields) === "array")
 		{
-			$fields = implode(",", $fields);
+			$fields = implode(",", (array)$fields);
 		}
 
 		//if (count($clause) == 0) $clause = null;
@@ -156,10 +156,10 @@ class MySqlCommand extends CommandBase
 			{
 				// insert sets 
 				foreach ($value as $i => $val)
-					$value[$i] = "(".implode($val, ",").")";
+					$value[$i] = "(".implode(',', $val).")";
 				
-				$field = implode($field, ",");
-				$value = implode($value, ",");
+				$field = implode(',', $field);
+				$value = implode(',', $value);
 			}
 			else 
 			{
@@ -173,7 +173,9 @@ class MySqlCommand extends CommandBase
 					}
 				}
 	
-				$field = implode($field, ",");
+				$field = implode(',',$field);
+
+				// available 10 years before this
 				$value = "(".implode($value, ",").")";
 			}
 			
@@ -188,7 +190,7 @@ class MySqlCommand extends CommandBase
 		foreach ($sets as $i => $s)
 			if (empty($s)) unset($sets[$i]);
 
-		$sets = implode($sets, ',');
+		$sets = implode(',', $sets);
 		$sql = "UPDATE $table SET $sets ";
 
 		if (gettype($clause) === "array")

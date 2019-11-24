@@ -38,7 +38,7 @@ class Router
 			$offset = $this->_CONFIG['URL']['M_OFFSET'];
 
 		$url = $this->parseUrl($offset);
-		$urlStr = implode($url, '/');
+		$urlStr = implode('/', $url);
 		//var_dump($urlStr);
 		$urlStrSub = substr($urlStr, 0, strpos($urlStr, '?'));
 		if ($urlStrSub)
@@ -55,7 +55,7 @@ class Router
 		$func = empty($url[$index]) ? "index" : $url[$index];
 		
 		$prefix = array_slice($keys, 0, $index);
-		$prefix = implode($prefix, '/');
+		$prefix = implode('/', $prefix);
 		
 		$params = array();
 		$urlParams = array_slice($url, $index + 1);
